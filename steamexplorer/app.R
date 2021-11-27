@@ -38,7 +38,7 @@ ui <- fluidPage(
         mainPanel(
            plotOutput("distPlot"),
            br(), br(),
-           tableOutput("results")
+           DT::dataTableOutput("results")
         )
     )
 )
@@ -62,7 +62,7 @@ server <- function(input, output) {
             theme(plot.title = element_text(hjust = 0.5))
     })
     
-    output$results <- renderTable({
+    output$results <- DT::renderDataTable({
         filtered <-
             steam %>%
             filter(original_price >= input$priceInput[1],
@@ -71,7 +71,7 @@ server <- function(input, output) {
                    languages == input$languageInput
             )
         filtered %>%
-            select(-c(genre,languages))
+            select(-c(id, genre,languages))
     })
 }
 
