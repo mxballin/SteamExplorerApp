@@ -134,11 +134,16 @@ server <- function(input, output) {
     })
     
     output$results <- DT::renderDataTable({
-        filtered() %>% select(-c(operating_system, processor,memory_ram,graphics,available_storage,additional_notes))
+        filtered() %>%
+            select(-c(genre,languages,operating_system, processor,memory_ram,graphics,available_storage,additional_notes))%>%
+            distinct(name, .keep_all = TRUE)
     })
     
     output$requirements <- DT::renderDataTable({
-        filtered() %>% select(c(name,operating_system, processor,memory_ram,graphics,available_storage,additional_notes))
+        filtered() %>%
+        select(c(name,operating_system, processor,memory_ram,graphics,available_storage,additional_notes))%>%
+        filter(!is.na(operating_system))%>%
+        distinct(name, .keep_all = TRUE)
     })
     
 }
