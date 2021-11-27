@@ -88,7 +88,7 @@ ui <- fluidPage(
     # Application title
     titlePanel("Steam Games Explorer"),
 
-    # Sidebar with a slider input for price of game
+    # Sidebar with a slider input for price of game, preferred language and genres.
     sidebarLayout(
         sidebarPanel(
         checkboxGroupInput("genreInput", "Select Your Preferred Genre(s) to Begin!",
@@ -100,23 +100,29 @@ ui <- fluidPage(
                     max = 200,
                     c(10,50),
                     pre="$"),
-        selectInput("languageInput", "Language",
-                    choices = c("English","French","Italian","German","Spanish - Spain","Japanese"))
-        ),
+        uiOutput("languageOutput")),
 
-        # Show a plot of the distribution
+        # Two tabs offering general information about the game and its review impressions and recommended hardware/software requirements
         mainPanel(
             tabsetPanel(type = "tabs",
-            tabPanel("General Game Info",plotOutput("distPlot"),
+            tabPanel("General Info", h4("Basic Game Information"), "Don't see any information? Make sure you have selected at least one genre from the options on the left.", br(),br(),plotOutput("distPlot"),
             br(), br(),
             DT::dataTableOutput("results")),
-            tabPanel("Recommended Requirements", DT::dataTableOutput("requirements"))
+            tabPanel("Recommended Requirements", h4("Recommended Requirements"), br(), br(),
+                     "Note: If you do not see the requirements for a game you are interested in listed here, the developer did not provide this information to Steam. ",
+                     br(), br(),DT::dataTableOutput("requirements"))
         )
     )
 ))
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+
+    output$languageOutput <- renderUI({
+        selectInput("languageInput", "Language",
+                    sort(unique(steam$languages)),
+                    selected = "English")
+    })
 
     filtered <- reactive({steam %>%
         filter(original_price >= input$priceInput[1],
@@ -128,8 +134,9 @@ server <- function(input, output) {
     output$distPlot <- renderPlot({
         ggplot(filtered(), aes(impression)) +
             geom_histogram(stat="count")+
-            ggtitle("The Distribution of Overall Impressions of Games on Steam")+
+            ggtitle("The Distribution of Review Impressions on Steam of Games in the Selected Genre(s)")+
             xlab("Review Impression")+
+            ylab("Number of Games")+
             theme(plot.title = element_text(hjust = 0.5))
     })
     
