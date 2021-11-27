@@ -1,6 +1,6 @@
 # Ballin Assignment B3
 
-This repository holds the files for Mya Ballin's project work for the Assignment B3 - OPTION B project for STAT545B: Exploratory Data Analysis at UBC. Option B asked students to create their own shiny app with three features and deploy it.
+This repository holds the files for Mya Ballin's project work for Assignment B3 - OPTION B for STAT545B: Exploratory Data Analysis at UBC. Option B asked students to create their own shiny app with three features and deploy it.
 
 ## Running Instance
 
