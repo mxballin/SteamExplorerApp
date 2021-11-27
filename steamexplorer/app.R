@@ -9,8 +9,78 @@
 
 library(shiny)
 library(ggplot2)
+library(datateachr)
+library(tidyverse)
+library(bpa)
 
-steam <- read.csv("ballin_steam.csv")
+#create the dataset needed for the app
+#isolating the original prices of the games
+game_prices <- steam_games %>%
+    pivot_longer(cols = c(original_price, discount_price),
+                 names_to = "price_type",
+                 values_to = "price",
+                 values_drop_na = TRUE) %>%
+    filter(!is.na(price_type), !is.na(price), price !="NaN")
+
+original_game_prices <- game_prices %>%
+    filter(price_type=="original_price")
+#factoring the genres of the games
+unnested_genres <- steam_games %>%
+    mutate(genre = strsplit(as.character(genre), ",")) %>% #tells r to divide up the phrase based on where there are commas
+    unnest(genre)
+
+factored_game_genres <- unnested_genres %>%
+    filter (!is.na(genre))%>%
+    mutate(genre = factor(genre,
+                          levels = c("Action","Adventure","Massively Multiplayer", "Strategy","Free to Play","RPG",
+                                     "Indie" , "Early Access","Simulation","Racing","Casual","Sports",
+                                     "Violent","Gore","Valve","Nudity","Animation & Modeling","Design & Illustration",
+                                     "Utilities","Sexual Content","Game Development","Education","Software Training",
+                                     "Web Publishing","Video Production","Audio Production","Movie",
+                                     "Photo Editing","Accounting","Documentary","Short", "360 Video","Tutorial","HTC")
+    )
+    )
+#bringing the original prices and game genre information together
+game_genres_OP <- factored_game_genres %>%
+    left_join(original_game_prices)
+
+viewable <- game_genres_OP %>%
+    select(id,name,recent_reviews, release_date,developer,genre,languages,original_price, minimum_requirements,url)
+
+viewable_impression <- viewable %>%
+    separate(recent_reviews,
+             into=c("impression",NA),
+             sep=",",
+             extra="merge",
+             remove=TRUE)%>%
+    mutate(
+        impression = factor(impression,
+                            levels = c("Overwhelmingly Negative", "Very Negative", "Negative", "Mostly Negative",
+                                       "Mixed",
+                                       "Mostly Positive", "Positive", "Very Positive", "Overwhelmingly Positive")
+        )#factor order is so that "Overwhelmingly positive" is shown at the top of a flipped axes plot
+    ) %>%
+    filter (!is.na(impression))
+
+viewable_date <- viewable_impression %>%
+    filter(!is.na(release_date), release_date !="NaN") %>% #remove NAs and NANs
+    mutate(pattern=get_pattern(release_date))%>% #identify pattern for release_date value
+    filter(str_detect(pattern, "9999")) %>%
+    mutate(release_date=as.Date(lubridate::parse_date_time(release_date, c("%m%d%y","%m%y","%d%m%y", "%y", "%y%m","%y%m%d"))))#providing for a variety of date formats
+
+viewable_languages <- viewable_date %>%
+    mutate(languages = strsplit(as.character(languages), ",")) %>%
+    unnest(languages)%>%
+    mutate(languages=as.factor(languages))
+
+viewable_requirements <-  viewable_languages %>%
+    extract(minimum_requirements,
+            into=c(NA,"operating_system", "processor","memory_ram","graphics","available_storage","additional_notes"),
+            regex="(.*):,OS:,(.*),Processor:,(.*),Memory:,(.*) RAM,Graphics:,(.*),Storage:,(.*) available space,Additional Notes:,(.*)",
+            remove=TRUE)
+
+steam <- viewable_requirements %>% select (-pattern)
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -36,9 +106,17 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot"),
-           br(), br(),
-           DT::dataTableOutput("results")
+            fluidRow(
+                column(6,
+                       plotOutput("distPlot", click = "plot1_click"),
+                ),
+                column(5,
+                       br(), br(), br(),
+                       htmlOutput("y_value"),
+                       verbatimTextOutput("selected_rows")
+                )),
+            br(), br(),
+            DT::dataTableOutput("results")
         )
     )
 )
@@ -47,8 +125,7 @@ ui <- fluidPage(
 server <- function(input, output) {
 
     output$distPlot <- renderPlot({
-        filtered <-
-            steam %>%
+        filtered <- steam %>%
             filter(original_price >= input$priceInput[1],
                    original_price <= input$priceInput[2],
                    genre %in% input$genreInput,
@@ -60,6 +137,39 @@ server <- function(input, output) {
             ggtitle("The Distribution of Overall Impressions of Games on Steam")+
             ylab("Number of Games")+
             theme(plot.title = element_text(hjust = 0.5))
+    })
+    
+    # Print the name of the x value
+    output$x_value <- renderText({
+        filtered <- steam %>%
+            filter(original_price >= input$priceInput[1],
+                   original_price <= input$priceInput[2],
+                   genre %in% input$genreInput,
+                   languages == input$languageInput
+            )
+        if (is.null(input$plot1_click$y)) return("")
+        else {
+            lvls <- levels(filtered$impression)
+            name <- lvls[round(input$plot1_click$y)]
+            HTML("You've selected <code>", name, "</code>",
+                 "<br><br>Here are the first 10 rows that ",
+                 "match that category:")
+        }
+    })
+    
+    # Print the rows of the data frame which match the x value
+    output$selected_rows <- renderPrint({
+        filtered <- steam %>%
+            filter(original_price >= input$priceInput[1],
+                   original_price <= input$priceInput[2],
+                   genre %in% input$genreInput,
+                   languages == input$languageInput
+            )
+        if (is.null(input$plot1_click$y)) return()
+        else {
+            keeprows <- round(input$plot1_click$y) == as.numeric(filtered$impression)
+            head(filtered[keeprows, ], 10)
+        }
     })
     
     output$results <- DT::renderDataTable({
