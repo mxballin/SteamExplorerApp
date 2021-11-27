@@ -10,7 +10,7 @@
 library(shiny)
 library(ggplot2)
 
-steam <- readRDS("ballin_steam.rds")
+steam <- read.csv("ballin_steam.csv")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
