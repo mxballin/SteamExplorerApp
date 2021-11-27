@@ -90,6 +90,7 @@ ui <- fluidPage(
 
     # Sidebar with a slider input for price of game, preferred language and genres.
     sidebarLayout(
+        #Feature: sidebar panel with multiple select, slider, and single select filters that allow for user filtering of the data. This enables users to select and view only the data that they are interested in.
         sidebarPanel(
         checkboxGroupInput("genreInput", "Select Your Preferred Genre(s) to Begin!",
                            c("Action","Adventure","Massively Multiplayer", "Strategy","Free to Play","RPG",
@@ -102,7 +103,8 @@ ui <- fluidPage(
                     pre="$"),
         uiOutput("languageOutput")),
 
-        # Two tabs offering general information about the game and its review impressions and recommended hardware/software requirements
+        # Feature: Two tabs offering general information about the game and its review impressions and recommended hardware/software requirements
+        #Creating the two tabs enables the user to more easily navigate all of the data they are being presented in the tables.
         mainPanel(
             tabsetPanel(type = "tabs",
             tabPanel("General Info", h4("Basic Game Information"), "Don't see any information? Make sure you have selected at least one genre from the options on the left.", br(),br(),plotOutput("distPlot"),
@@ -139,7 +141,8 @@ server <- function(input, output) {
             ylab("Number of Games")+
             theme(plot.title = element_text(hjust = 0.5))
     })
-    
+    #Feature: Interactable data tables that allow the user to further sort the information they are being provided
+    #This allows the user to prioritize certain aspects of the information in the tables without overwhelming them with too many filter options in the sidebar panel.
     output$results <- DT::renderDataTable({
         filtered() %>%
             select(-c(genre,languages,operating_system, processor,memory_ram,graphics,available_storage,additional_notes))%>%
