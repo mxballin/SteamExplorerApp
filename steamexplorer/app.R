@@ -45,7 +45,7 @@ game_genres_OP <- factored_game_genres %>%
     left_join(original_game_prices)
 
 viewable <- game_genres_OP %>%
-    select(id,name,recent_reviews, release_date,developer,genre,languages,original_price, minimum_requirements,url)
+    select(id,name,recent_reviews, release_date,developer,genre,languages,original_price,url)
 
 viewable_impression <- viewable %>%
     separate(recent_reviews,
@@ -73,13 +73,7 @@ viewable_languages <- viewable_date %>%
     unnest(languages)%>%
     mutate(languages=as.factor(languages))
 
-viewable_requirements <-  viewable_languages %>%
-    extract(minimum_requirements,
-            into=c(NA,"operating_system", "processor","memory_ram","graphics","available_storage","additional_notes"),
-            regex="(.*):,OS:,(.*),Processor:,(.*),Memory:,(.*) RAM,Graphics:,(.*),Storage:,(.*) available space,Additional Notes:,(.*)",
-            remove=TRUE)
-
-steam <- viewable_requirements %>% select (-pattern)
+steam <- viewable_languages %>% select(-c(id,pattern))
 
 
 # Define UI for application that draws a histogram
@@ -91,30 +85,22 @@ ui <- fluidPage(
     # Sidebar with a slider input for price of game
     sidebarLayout(
         sidebarPanel(
-            sliderInput("priceInput",
-                        "Price:",
-                        min = 0,
-                        max = 200,
-                        c(10,50),
-                        pre="$"),
-        checkboxGroupInput("genreInput", "Genres:",
+        checkboxGroupInput("genreInput", "Select Your Preferred Genre(s) to Begin!",
                            c("Action","Adventure","Massively Multiplayer", "Strategy","Free to Play","RPG",
                                     "Indie" , "Early Access","Simulation","Racing","Casual","Sports")),
+        sliderInput("priceInput",
+                    "Price:",
+                    min = 0,
+                    max = 200,
+                    c(10,50),
+                    pre="$"),
         selectInput("languageInput", "Language",
                     choices = c("English","French","Italian","German","Spanish - Spain","Japanese"))
         ),
 
         # Show a plot of the generated distribution
         mainPanel(
-            fluidRow(
-                column(6,
-                       plotOutput("distPlot", click = "plot1_click"),
-                ),
-                column(5,
-                       br(), br(), br(),
-                       htmlOutput("y_value"),
-                       verbatimTextOutput("selected_rows")
-                )),
+            plotOutput("distPlot"),
             br(), br(),
             DT::dataTableOutput("results")
         )
@@ -124,64 +110,23 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
+    filtered <- reactive({steam %>%
+        filter(original_price >= input$priceInput[1],
+               original_price <= input$priceInput[2],
+               genre %in% input$genreInput,
+               languages == input$languageInput
+        )
+    })
     output$distPlot <- renderPlot({
-        filtered <- steam %>%
-            filter(original_price >= input$priceInput[1],
-                   original_price <= input$priceInput[2],
-                   genre %in% input$genreInput,
-                   languages == input$languageInput
-            )
-        ggplot(filtered, aes(impression)) +
+        ggplot(filtered(), aes(impression)) +
             geom_histogram(stat="count")+
-            coord_flip()+ #flipped axes make it easier to read the variable names
             ggtitle("The Distribution of Overall Impressions of Games on Steam")+
-            ylab("Number of Games")+
+            xlab("Review Impression")+
             theme(plot.title = element_text(hjust = 0.5))
     })
     
-    # Print the name of the x value
-    output$x_value <- renderText({
-        filtered <- steam %>%
-            filter(original_price >= input$priceInput[1],
-                   original_price <= input$priceInput[2],
-                   genre %in% input$genreInput,
-                   languages == input$languageInput
-            )
-        if (is.null(input$plot1_click$y)) return("")
-        else {
-            lvls <- levels(filtered$impression)
-            name <- lvls[round(input$plot1_click$y)]
-            HTML("You've selected <code>", name, "</code>",
-                 "<br><br>Here are the first 10 rows that ",
-                 "match that category:")
-        }
-    })
-    
-    # Print the rows of the data frame which match the x value
-    output$selected_rows <- renderPrint({
-        filtered <- steam %>%
-            filter(original_price >= input$priceInput[1],
-                   original_price <= input$priceInput[2],
-                   genre %in% input$genreInput,
-                   languages == input$languageInput
-            )
-        if (is.null(input$plot1_click$y)) return()
-        else {
-            keeprows <- round(input$plot1_click$y) == as.numeric(filtered$impression)
-            head(filtered[keeprows, ], 10)
-        }
-    })
-    
     output$results <- DT::renderDataTable({
-        filtered <-
-            steam %>%
-            filter(original_price >= input$priceInput[1],
-                   original_price <= input$priceInput[2],
-                   genre %in% input$genreInput,
-                   languages == input$languageInput
-            )
-        filtered %>%
-            select(-c(id, genre,languages))
+        filtered()
     })
 }
 
