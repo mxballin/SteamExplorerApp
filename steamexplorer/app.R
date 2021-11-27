@@ -27,13 +27,11 @@ ui <- fluidPage(
                         max = 200,
                         c(10,50),
                         pre="$"),
-        selectInput("genreInput", "Genre",
-                        choices = c("Action","Adventure","Massively Multiplayer", "Strategy","Free to Play","RPG",
-                                    "Indie" , "Early Access","Simulation","Racing","Casual","Sports",
-                                    "Violent","Gore","Valve","Nudity","Animation & Modeling","Design & Illustration",
-                                    "Utilities","Sexual Content","Game Development","Education","Software Training",
-                                    "Web Publishing","Video Production","Audio Production","Movie",
-                                    "Photo Editing","Accounting","Documentary","Short", "360 Video","Tutorial","HTC"))
+        checkboxGroupInput("genreInput", "Genres:",
+                           c("Action","Adventure","Massively Multiplayer", "Strategy","Free to Play","RPG",
+                                    "Indie" , "Early Access","Simulation","Racing","Casual","Sports")),
+        selectInput("languageInput", "Language",
+                    choices = c("English","French","Italian","German","Spanish - Spain","Japanese"))
         ),
 
         # Show a plot of the generated distribution
@@ -53,14 +51,27 @@ server <- function(input, output) {
             steam %>%
             filter(original_price >= input$priceInput[1],
                    original_price <= input$priceInput[2],
-                   genre == input$genreInput
+                   genre %in% input$genreInput,
+                   languages == input$languageInput
             )
-        ggplot(steam, aes(impression)) +
+        ggplot(filtered, aes(impression)) +
             geom_histogram(stat="count")+
             coord_flip()+ #flipped axes make it easier to read the variable names
             ggtitle("The Distribution of Overall Impressions of Games on Steam")+
             ylab("Number of Games")+
             theme(plot.title = element_text(hjust = 0.5))
+    })
+    
+    output$results <- renderTable({
+        filtered <-
+            steam %>%
+            filter(original_price >= input$priceInput[1],
+                   original_price <= input$priceInput[2],
+                   genre %in% input$genreInput,
+                   languages == input$languageInput
+            )
+        filtered %>%
+            select(-c(genre,languages))
     })
 }
 
