@@ -5,7 +5,7 @@ account: mxballin
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5212095
-bundleId: 5299980
+bundleId: 5300003
 url: https://mxballin.shinyapps.io/steamexplorer/
-when: 1638041563.4614
-lastSyncTime: 1638041563.46146
+when: 1638042350.01511
+lastSyncTime: 1638042350.01513
