@@ -45,7 +45,7 @@ game_genres_OP <- factored_game_genres %>%
     left_join(original_game_prices)
 
 viewable <- game_genres_OP %>%
-    select(id,name,recent_reviews, release_date,developer,genre,languages,original_price,url)
+    select(id,name,recent_reviews, release_date,developer,genre,languages,original_price,url,recommended_requirements)
 
 viewable_impression <- viewable %>%
     separate(recent_reviews,
@@ -73,7 +73,13 @@ viewable_languages <- viewable_date %>%
     unnest(languages)%>%
     mutate(languages=as.factor(languages))
 
-steam <- viewable_languages %>% select(-c(id,pattern))
+viewable_requirements <-  viewable_languages %>%
+    extract(recommended_requirements,
+            into=c(NA,"operating_system", "processor","memory_ram","graphics","available_storage","additional_notes"),
+            regex="(.*):,OS:,(.*),Processor:,(.*),Memory:,(.*) RAM,Graphics:,(.*),Storage:,(.*) available space,Additional Notes:,(.*)",
+            remove=TRUE)
+
+steam <- viewable_requirements %>% select(-c(id,pattern))
 
 
 # Define UI for application that draws a histogram
@@ -100,12 +106,14 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-            plotOutput("distPlot"),
+            tabsetPanel(type = "tabs",
+            tabPanel("General Info",plotOutput("distPlot"),
             br(), br(),
-            DT::dataTableOutput("results")
+            DT::dataTableOutput("results")),
+            tabPanel("Recommended Requirements", DT::dataTableOutput("requirements"))
         )
     )
-)
+))
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -126,8 +134,13 @@ server <- function(input, output) {
     })
     
     output$results <- DT::renderDataTable({
-        filtered()
+        filtered() %>% select(-c(operating_system, processor,memory_ram,graphics,available_storage,additional_notes))
     })
+    
+    output$requirements <- DT::renderDataTable({
+        filtered() %>% select(c(name,operating_system, processor,memory_ram,graphics,available_storage,additional_notes))
+    })
+    
 }
 
 # Run the application 
