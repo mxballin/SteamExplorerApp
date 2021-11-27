@@ -82,7 +82,7 @@ viewable_requirements <-  viewable_languages %>%
 steam <- viewable_requirements %>% select(-c(id,pattern))
 
 
-# Define UI for application that draws a histogram
+# Define UI for application
 ui <- fluidPage(
 
     # Application title
@@ -104,10 +104,10 @@ ui <- fluidPage(
                     choices = c("English","French","Italian","German","Spanish - Spain","Japanese"))
         ),
 
-        # Show a plot of the generated distribution
+        # Show a plot of the distribution
         mainPanel(
             tabsetPanel(type = "tabs",
-            tabPanel("General Info",plotOutput("distPlot"),
+            tabPanel("General Game Info",plotOutput("distPlot"),
             br(), br(),
             DT::dataTableOutput("results")),
             tabPanel("Recommended Requirements", DT::dataTableOutput("requirements"))
