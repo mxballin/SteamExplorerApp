@@ -4,7 +4,7 @@ This repository holds the files for Mya Ballin's project work for the Assignment
 
 ## Running Instance
 
-If you would like to view and test out the application created for this project, it is available at the following link: <a href=" https://mxballin.shinyapps.io/steamexplorer/"> https://mxballin.shinyapps.io/steamexplorer/</a>
+If you would like to view and test out the application created for this project, it is available at the following link: https://mxballin.shinyapps.io/steamexplorer/
 
 ## Description of the Application
 
