@@ -12,6 +12,12 @@ This application seeks to allow the user to explore the the 'Steam Games' datase
 
 The application offers two different displays, one that focuses on general information about the games that are within the user's criteria and the reviews that they have received on Steam and another that allows the user to view the recommended system requirements for games that have provided such information and meet the criteria.
 
+#### Application Features
+
+1. A sidebar panel with multiple select, slider, and single select filters that allow for user filtering of the data. This enables users to select and view only the data that they are interested in.
+2. Two main panel tabs offering general information about the game and its review impressions and recommended hardware/software requirements on separate views. Creating the two tabs enables the user to more easily navigate all of the data they are being presented in the tables.
+3. Interactable data tables that allow the user to further sort the information they are being provided. This allows the user to prioritize certain aspects of the information in the tables (for example price high to low or low to high).
+
 ## Documents
 
 This repository contains the following folder:
