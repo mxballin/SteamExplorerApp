@@ -49,6 +49,12 @@ ui <- fluidPage(
 server <- function(input, output) {
 
     output$distPlot <- renderPlot({
+        filtered <-
+            steam %>%
+            filter(original_price >= input$priceInput[1],
+                   original_price <= input$priceInput[2],
+                   genre == input$genreInput
+            )
         ggplot(steam, aes(impression)) +
             geom_histogram(stat="count")+
             coord_flip()+ #flipped axes make it easier to read the variable names
