@@ -8,7 +8,9 @@
 #
 
 library(shiny)
-library(datateachr)
+library(ggplot2)
+
+steam <- readRDS("ballin_steam.rds")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -26,12 +28,19 @@ ui <- fluidPage(
                         c(10,50),
                         pre="$"),
         selectInput("genreInput", "Genre",
-                        choices = c("Indie", "Action", "Adventure"))
+                        choices = c("Action","Adventure","Massively Multiplayer", "Strategy","Free to Play","RPG",
+                                    "Indie" , "Early Access","Simulation","Racing","Casual","Sports",
+                                    "Violent","Gore","Valve","Nudity","Animation & Modeling","Design & Illustration",
+                                    "Utilities","Sexual Content","Game Development","Education","Software Training",
+                                    "Web Publishing","Video Production","Audio Production","Movie",
+                                    "Photo Editing","Accounting","Documentary","Short", "360 Video","Tutorial","HTC"))
         ),
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+           plotOutput("distPlot"),
+           br(), br(),
+           tableOutput("results")
         )
     )
 )
@@ -40,12 +49,12 @@ ui <- fluidPage(
 server <- function(input, output) {
 
     output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+        ggplot(steam, aes(impression)) +
+            geom_histogram(stat="count")+
+            coord_flip()+ #flipped axes make it easier to read the variable names
+            ggtitle("The Distribution of Overall Impressions of Games on Steam")+
+            ylab("Number of Games")+
+            theme(plot.title = element_text(hjust = 0.5))
     })
 }
 

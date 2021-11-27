@@ -1,0 +1,11 @@
+name: steamexplorer
+title:
+username:
+account: mxballin
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5212095
+bundleId: 5298434
+url: https://mxballin.shinyapps.io/steamexplorer/
+when: 1637990724.63212
+lastSyncTime: 1637990724.63214
