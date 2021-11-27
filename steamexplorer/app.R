@@ -28,7 +28,7 @@ original_game_prices <- game_prices %>%
 unnested_genres <- steam_games %>%
     mutate(genre = strsplit(as.character(genre), ",")) %>% #tells r to divide up the phrase based on where there are commas
     unnest(genre)
-
+#leveling factored genres
 factored_game_genres <- unnested_genres %>%
     filter (!is.na(genre))%>%
     mutate(genre = factor(genre,
@@ -44,9 +44,11 @@ factored_game_genres <- unnested_genres %>%
 game_genres_OP <- factored_game_genres %>%
     left_join(original_game_prices)
 
+#subsetting the tibble to only include the desired rows
 viewable <- game_genres_OP %>%
     select(id,name,recent_reviews, release_date,developer,genre,languages,original_price,url,recommended_requirements)
 
+#isolating the "impression" 
 viewable_impression <- viewable %>%
     separate(recent_reviews,
              into=c("impression",NA),
@@ -62,23 +64,27 @@ viewable_impression <- viewable %>%
     ) %>%
     filter (!is.na(impression))
 
+#making sure the dates are recognizable as dates
 viewable_date <- viewable_impression %>%
     filter(!is.na(release_date), release_date !="NaN") %>% #remove NAs and NANs
     mutate(pattern=get_pattern(release_date))%>% #identify pattern for release_date value
     filter(str_detect(pattern, "9999")) %>%
     mutate(release_date=as.Date(lubridate::parse_date_time(release_date, c("%m%d%y","%m%y","%d%m%y", "%y", "%y%m","%y%m%d"))))#providing for a variety of date formats
 
+#unnesting languages
 viewable_languages <- viewable_date %>%
     mutate(languages = strsplit(as.character(languages), ",")) %>%
     unnest(languages)%>%
     mutate(languages=as.factor(languages))
 
+#extracting the recommended requirement information
 viewable_requirements <-  viewable_languages %>%
     extract(recommended_requirements,
             into=c(NA,"operating_system", "processor","memory_ram","graphics","available_storage","additional_notes"),
             regex="(.*):,OS:,(.*),Processor:,(.*),Memory:,(.*) RAM,Graphics:,(.*),Storage:,(.*) available space,Additional Notes:,(.*)",
             remove=TRUE)
 
+#subsetting the data
 steam <- viewable_requirements %>% select(-c(id,pattern))
 
 
@@ -119,13 +125,13 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
+    #making the language select responsive to the data
     output$languageOutput <- renderUI({
         selectInput("languageInput", "Language",
                     sort(unique(steam$languages)),
                     selected = "English")
     })
-
+    #passing the selected filters to filter the dataset
     filtered <- reactive({steam %>%
         filter(original_price >= input$priceInput[1],
                original_price <= input$priceInput[2],
@@ -133,6 +139,7 @@ server <- function(input, output) {
                languages == input$languageInput
         )
     })
+    #plotting the distribution of impressions
     output$distPlot <- renderPlot({
         ggplot(filtered(), aes(impression)) +
             geom_histogram(stat="count")+
@@ -143,12 +150,13 @@ server <- function(input, output) {
     })
     #Feature: Interactable data tables that allow the user to further sort the information they are being provided
     #This allows the user to prioritize certain aspects of the information in the tables without overwhelming them with too many filter options in the sidebar panel.
-    output$results <- DT::renderDataTable({
+   #general info table
+     output$results <- DT::renderDataTable({
         filtered() %>%
             select(-c(genre,languages,operating_system, processor,memory_ram,graphics,available_storage,additional_notes))%>%
             distinct(name, .keep_all = TRUE)
     })
-    
+    #Requirements table
     output$requirements <- DT::renderDataTable({
         filtered() %>%
         select(c(name,operating_system, processor,memory_ram,graphics,available_storage,additional_notes))%>%
