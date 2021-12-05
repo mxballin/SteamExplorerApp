@@ -1,10 +1,12 @@
-# Ballin Assignment B3
+# Ballin Assignment B3 & B4
 
-This repository holds the files for Mya Ballin's project work for Assignment B3 - OPTION B for STAT545B: Exploratory Data Analysis at UBC. Option B asked students to create their own shiny app with three features and deploy it.
+This repository holds the files for Mya Ballin's project work for Assignments B3 - OPTION B and B4 — Option C for STAT545B: Exploratory Data Analysis at UBC. Option B for assignment B3 asked students to create their own shiny app with three features and deploy it and Option C for assignment B4 asked students to continue to add features to their app.
 
 ## Running Instance
 
-If you would like to view and test out the application created for this project, it is available at the following link: https://mxballin.shinyapps.io/steamexplorer/
+If you would like to view and test out the application created for this project, it is available at the following link: https://mxballin.shinyapps.io/steamexplorer2/
+
+The original version of the app created for Assignment B3 can be viewed here: https://mxballin.shinyapps.io/steamexplorer/
 
 ## Description of the Application
 
@@ -13,6 +15,13 @@ This application seeks to allow the user to explore the the 'Steam Games' datase
 The application offers two different displays, one that focuses on general information about the games that are within the user's criteria and the reviews that they have received on Steam and another that allows the user to view the recommended system requirements for games that have provided such information and meet the criteria.
 
 #### Application Features
+
+Created for Assignment B4
+1. An interactive graph that uses the package 'plotly'.
+2. Additional filters on the recommended hardware/software requirements that allows users to filter that table based on their setup
+3. 
+
+Created for Assignment B3
 
 1. A sidebar panel with multiple select, slider, and single select filters that allow for user filtering of the data. This enables users to select and view only the data that they are interested in.
 2. Two main panel tabs offering general information about the game and its review impressions and recommended hardware/software requirements on separate views. Creating the two tabs enables the user to more easily navigate all of the data they are being presented in the tables.
