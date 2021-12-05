@@ -116,7 +116,8 @@ ui <- fluidPage(
         mainPanel(
             tabsetPanel(type = "tabs",
             tabPanel("General Info", h4("Basic Game Information"), "Don't see any information? Make sure you have selected at least one genre from the options on the left.", br(),br(),
-                    plotlyOutput(outputId = "p"),
+                     fluidRow(plotlyOutput(outputId = "p"),
+                    verbatimTextOutput("click")),
                     br(), br(),
                     DT::dataTableOutput("results")),
             tabPanel("Recommended Requirements", h4("Recommended Requirements"), br(), br(),
@@ -144,19 +145,19 @@ server <- function(input, output) {
     })
     #plotting the distribution of impressions
     output$p <- renderPlotly({
-        highlight <- highlight_key(filtered(),~genre)
-        p<-ggplot(highlight, aes(impression)) +
-            geom_histogram(stat="count")+
+        counts <- filtered() %>% count(genre,impression,name="count")
+        highlight <- highlight_key(counts,~impression)
+        gg<-ggplot(highlight, aes(x=impression,y=count,fill=genre,customdata=genre)) +
+            geom_bar(position="stack", stat="identity")+
             ggtitle("The Distribution of Review Impressions on Steam of Games in the Selected Genre(s)")+
             xlab("Review Impression")+
             ylab("Number of Games")+
             theme(plot.title = element_text(hjust = 0.5))
-        highlight(ggplotly(p), on = "plotly_click", 
-                  selectize = TRUE, 
-                  dynamic = TRUE, 
-                  persistent = TRUE
+        highlight(ggplotly(gg), on = "plotly_click",
+                  dynamic = TRUE
         )
     })
+    
 
     #Feature: Interactable data tables that allow the user to further sort the information they are being provided
     #This allows the user to prioritize certain aspects of the information in the tables without overwhelming them with too many filter options in the sidebar panel.
