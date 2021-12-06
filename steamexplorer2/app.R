@@ -102,56 +102,60 @@ library(shinydashboard)
     
 
 # Define UI for application
-ui <- fluidPage(
-
+ui <- dashboardPage(
     # Application title
-    titlePanel("Steam Games Explorer 2"),
+    dashboardHeader(title="Steam Games Explorer 2"),
 
     # Sidebar with a slider input for price of game, preferred language and genres.
-    sidebarLayout(
-        #Feature: sidebar panel with multiple select, slider, and single select filters that allow for user filtering of the data. This enables users to select and view only the data that they are interested in.
-        sidebarPanel(
-        checkboxGroupInput("genreInput", "Select Your Preferred Genre(s) to Begin!",
-                           c("Action","Adventure","Massively Multiplayer", "Strategy","Free to Play","RPG",
-                                    "Indie" , "Early Access","Simulation","Racing","Casual","Sports")),
-        sliderInput("priceInput",
-                    "Price:",
-                    min = 0,
-                    max = 200,
-                    c(10,50),
-                    pre="$"),
-        uiOutput("languageOutput")),
+    dashboardSidebar(
+        sidebarMenu(menuItem("General Information", tabName = "general", icon=icon("info-sign", lib = "glyphicon")),
+                    menuItem("Recommended Requirements", tabName = "requirements", icon=icon("cog", lib = "glyphicon")),
+                    checkboxGroupInput("genreInput", "Select Your Preferred Genre(s) to Begin!",
+                                                      c("Action","Adventure","Massively Multiplayer", "Strategy","Free to Play","RPG",
+                                                        "Indie" , "Early Access","Simulation","Racing","Casual","Sports")),
+                    sliderInput("priceInput",
+                                "Price:",
+                                               min = 0,
+                                               max = 200,
+                                               c(10,50),
+                                               pre="$"),
+                                   uiOutput("languageOutput")),
+                                   "Want to explore the data on your own? You can download the filtered version of the data by clicking the button below.",br(),
+                                   downloadButton("filterdownload","Download the Filtered Data")
+                    ),
+    
 
         #Original Feature: Two tabs offering general information about the game and its review impressions and recommended hardware/software requirements
         #Creating the two tabs enables the user to more easily navigate all of the data they are being presented in the tables.
-        mainPanel(
-            tabsetPanel(type = "tabs",
-            tabPanel("General Info", h2("Basic Game Information"),
-                    "Don't see any information? Make sure you have selected at least one genre from the options on the left.", br(),br(),
-                    "Want to explore the data on your own? You can download the filtered version of the data by clicking the button below.",br(),
-                    downloadButton("filterdownload","Download the Filtered Data"),
-                    plotlyOutput(outputId = "p"),
-                    br(), br(),
-                    DT::dataTableOutput("results")),
-            tabPanel("Recommended Requirements", h2("Recommended Requirements"), br(),
+        dashboardBody(
+            tabItems(
+            tabItem(tabName = "general",
+                    h2("Basic Game Information"),
+                    box(width = NULL, background = "aqua",
+                           "Don't see any information? Make sure you have selected at least one genre from the options on the left."),
+                    box(title ="The Distribution of Review Impressions on Steam of Games in the Selected Genre(s)",
+                        width = NULL, solidHeader = TRUE, plotlyOutput(outputId = "p")),
+                    box(title = "Games that Match Your Preferences",
+                        width = NULL, solidHeader = TRUE, DT::dataTableOutput("results"))),
         #New Feature: Additional filtering enabled on the Requirements Panel to enable more specific filtering for the type of information a user would be interested in
-                     h4("Filter for your system specs"),
-                     fluidRow(column(6,
-                                     checkboxGroupInput("osInput", "Select Your Preferred Operating System",
-                                        c("Windows","Mac","Linux", "Ubuntu","SteamOS"),
-                                        selected="Windows")),
-                    
-                    column(6,
-                           sliderInput("storageInput",
-                                "Minimum Available Storage:",
-                                min = 0,
-                                max = 87040,
-                                c(0,51200),
-                                post="MB"),
-                                textOutput("GBconversion"))),
-                     br(),
-                     "Note: If you do not see the requirements for a game you are interested in listed here, the developer did not provide this information to Steam. ",
-                     br(), br(),DT::dataTableOutput("requirements"))
+            tabItem(tabName="requirements",
+                    h2("Recommended Requirements"),
+                    box(title = "Filter for your system specs", width = NULL, status = "primary", solidHeader = TRUE,
+                        checkboxGroupInput("osInput", "Select Your Preferred Operating System",
+                            c("Windows","Mac","Linux", "Ubuntu","SteamOS"),
+                            selected="Windows"),
+                        sliderInput("storageInput",
+                            "Minimum Available Storage:",
+                             min = 0,
+                             max = 87040,
+                             c(0,51200),
+                             post="MB"),
+                             textOutput("GBconversion")),
+                    box(width = NULL, background = "purple",
+                     "Note: If you do not see the requirements for a game you are interested in listed here, the developer did not provide this information to Steam."),
+                    box(title = "Games that Meet Your Requirement Specifications",
+                        width = NULL, solidHeader = TRUE,
+                        DT::dataTableOutput("requirements"))
         )
     )
 ))
@@ -190,10 +194,9 @@ server <- function(input, output) {
         counts <- filtered() %>% count(genre,impression,name="count")
         gg<-ggplot(counts, aes(x=impression,y=count,fill=genre,customdata=genre)) +
             geom_bar(position="stack", stat="identity")+
-            ggtitle("The Distribution of Review Impressions on Steam of Games in the Selected Genre(s)")+
             xlab("Review Impression")+
             ylab("Number of Games")+
-            theme(plot.title = element_text(hjust = 0.5))
+            theme_minimal()
         ggplotly(gg)
         
     })
