@@ -102,6 +102,7 @@ library(shinydashboard)
     
 
 # Define UI for application
+# New Feature: Using shinydashboard to create a smoother looking UI
 ui <- dashboardPage(
     # Application title
     dashboardHeader(title="Steam Games Explorer 2"),
@@ -120,8 +121,9 @@ ui <- dashboardPage(
                                                c(10,50),
                                                pre="$"),
                                    uiOutput("languageOutput")),
-                                   "Want to explore the data on your own? You can download the filtered version of the data by clicking the button below.",br(),
-                                   downloadButton("filterdownload","Download the Filtered Data")
+                    #New Feature: Offering the option to download the filtered data
+                    "Want to explore the data on your own? You can download the filtered version of the data by clicking the button below.",br(),
+                    downloadButton("filterdownload","Download the Filtered Data")
                     ),
     
 
