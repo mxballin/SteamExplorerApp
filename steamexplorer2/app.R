@@ -97,8 +97,13 @@ library(shinydashboard)
         mutate(storage=as.numeric(str_remove_all(available_storage,"GB|MB")))%>%
         mutate(storage=if_else(str_detect(available_storage,"GB"),storage*1024,storage))
     
+    #hyperlinking URLs
+    #source:https://stackoverflow.com/questions/43771148/how-to-rename-columns-in-a-shiny-rendertable
+    url <- storagefix %>%
+        mutate(url=paste0("<a href='",url,"'>",url,"</a>"))
+    
     #subsetting the data
-    steam <- storagefix %>% select(-c(id,pattern))
+    steam <- url %>% select(-c(id,pattern))
     
 
 # Define UI for application
@@ -107,7 +112,7 @@ ui <- dashboardPage(
     # Application title
     dashboardHeader(title="Steam Games Explorer 2"),
 
-    # Sidebar with a slider input for price of game, preferred language and genres.
+    # Sidebar with filtering options as well as display tabs
     dashboardSidebar(
         sidebarMenu(
             menuItem("General Information", tabName = "general", icon=icon("info-sign", lib = "glyphicon")),
@@ -223,9 +228,12 @@ server <- function(input, output) {
     #This allows the user to prioritize certain aspects of the information in the tables without overwhelming them with too many filter options in the sidebar panel.
    #general info table
      output$results <- DT::renderDataTable({
+        DT::datatable(
         filtered() %>%
-            select(-c(genre,languages,operating_system, processor,memory_ram,graphics,available_storage,additional_notes))%>%
-            distinct(name, .keep_all = TRUE)
+            select(-c(genre,languages,operating_system, processor,memory_ram,graphics,available_storage,additional_notes,storage))%>%
+            distinct(name, .keep_all = TRUE)%>%
+        rename(Name=name, "Review Impression"=impression, "Release Date"=release_date,"Developer"=developer,"Original Price"=original_price,"URL"=url),
+        escape = FALSE)
     })
 
 #Recommended Requirements Tab
@@ -245,7 +253,8 @@ server <- function(input, output) {
      
     #Requirements table
     output$requirements <- DT::renderDataTable({reqs()%>%
-        select(-c(storage))
+        select(-c(storage))%>%
+        rename(Name = name, "Operating System" = operating_system,"Processor"=processor,"RAM"=memory_ram,"Graphics Processor"=graphics,"Available Storage"=available_storage,"Additional Notes"=additional_notes)
     })
     
 }
