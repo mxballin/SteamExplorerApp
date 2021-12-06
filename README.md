@@ -17,9 +17,9 @@ The application offers two different displays, one that focuses on general infor
 #### Application Features
 
 Created for Assignment B4
-1. An interactive graph that uses the package 'plotly'.
-2. Additional filters on the recommended hardware/software requirements that allows users to filter that table based on their setup
-3. 
+1. For this part of the assignment, the UI of the app was changed to utilize the features of the package 'shinydashboard'.
+2. Additional filters on the recommended hardware/software requirements that allows users to filter that table based on their computer setup.
+3. Another feature that was added for assignment B4 is the option for a user to download the filtered data as a csv file.
 
 Created for Assignment B3
 

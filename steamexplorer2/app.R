@@ -133,10 +133,16 @@ ui <- dashboardPage(
             tabItems(
             tabItem(tabName = "general",
                     h2("Basic Game Information"),
-                    box(width = NULL, background = "aqua",
-                           "Don't see any information? Make sure you have selected at least one genre from the options on the left."),
+                    fluidRow(infoBoxOutput("resultsBox")),
+                    fluidRow(
+                    box(width = NULL, background = "purple",
+                                  "Don't see any results? Make sure you have selected at least one genre from the options on the left.")),
                     box(title ="The Distribution of Review Impressions on Steam of Games in the Selected Genre(s)",
                         width = NULL, solidHeader = TRUE, plotlyOutput(outputId = "p")),
+                    box(title = "About Review Impressions",width = NULL, solidHeader = TRUE,
+                        "In order to help you identify games that are popular and of high quality, Steam has summarized the general response of a game.
+                        Using data from submitted reviews, games are assigned an 'impression' that indicates what the overall character of reviews has been like. This scale runs from 'Overwhelmingly Negative' to 'Overwhelmingly Positive'."
+                        ),
                     box(title = "Games that Match Your Preferences",
                         width = NULL, solidHeader = TRUE, DT::dataTableOutput("results"))),
         #New Feature: Additional filtering enabled on the Requirements Panel to enable more specific filtering for the type of information a user would be interested in
@@ -180,6 +186,7 @@ server <- function(input, output) {
         )
     })
     
+
 #Sidebar
     output$filterdownload <- downloadHandler(
         filename = function() {
@@ -190,6 +197,13 @@ server <- function(input, output) {
         }
     )
 #Recommended Requirements Tab
+    #results info box
+    output$resultsBox <- renderInfoBox({
+        count <- filtered()%>%nrow()
+        infoBox("Results:", paste0(count, " games"), icon = icon("knight", lib="glyphicon"),
+            color = "purple"
+        )
+    })
     #plotting the distribution of impressions
     #New Feature: Using Plotly to render the original ggplot in order to offer interaction with the plot
     output$p <- renderPlotly({
