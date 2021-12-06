@@ -8,10 +8,10 @@
 #
 
 library(shiny)
-library(ggplot2)
 library(datateachr)
 library(tidyverse)
 library(bpa)
+library(ggplot2)
 library(plotly)
 library(shinydashboard)
 
@@ -109,7 +109,8 @@ ui <- dashboardPage(
 
     # Sidebar with a slider input for price of game, preferred language and genres.
     dashboardSidebar(
-        sidebarMenu(menuItem("General Information", tabName = "general", icon=icon("info-sign", lib = "glyphicon")),
+        sidebarMenu(
+            menuItem("General Information", tabName = "general", icon=icon("info-sign", lib = "glyphicon")),
                     menuItem("Recommended Requirements", tabName = "requirements", icon=icon("cog", lib = "glyphicon")),
                     checkboxGroupInput("genreInput", "Select Your Preferred Genre(s) to Begin!",
                                                       c("Action","Adventure","Massively Multiplayer", "Strategy","Free to Play","RPG",
@@ -132,6 +133,7 @@ ui <- dashboardPage(
         dashboardBody(
             tabItems(
             tabItem(tabName = "general",
+                    box(width=NULL, background="light-blue","Welcome to the Steam Games Explorer! We are here to help you find games that you would be interested in playing."),
                     h2("Basic Game Information"),
                     fluidRow(infoBoxOutput("resultsBox")),
                     fluidRow(
